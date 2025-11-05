@@ -1,0 +1,55 @@
+import sys,os
+sys.path.append('/code')
+from functions import *
+import datetime as dt
+now = dt.datetime.now()
+nowTime = str(now.strftime("%B-%d_%H-%M"))
+
+os.system('clear')
+
+campusDistro = coreDistSwitches.devices['101F138B001R9606D']
+campuCore = coreDistSwitches.devices['F138W120RS9500C']
+keyDistro = coreDistSwitches.devices['K5302169R9500D']
+
+df = pd.DataFrame()
+
+def getRoute(device,df):
+  try:
+    device.connect(init_exec_commands=[],init_config_commands=[],log_stdout=False)
+    command = device.parse('show ip route')
+    af = command['vrf']['default']['address_family']['ipv4']['routes']
+    for e in af.values():
+      route = e['route']
+      source = e['source_protocol']
+      tempDict = {'route':route,'source':source}
+      if source == 'eigrp':
+        nextHopDict = e['next_hop']['next_hop_list']
+        for v in nextHopDict.values():
+          nxthop = 'nextHop' + str(v['index'])
+          updt = 'updated' + str(v['index'])
+          intrfc = 'interface' + str(v['index'])
+          aa = {nxthop:v['next_hop'],updt: v['updated'],intrfc:v['outgoing_interface']}
+          tempDict.update(aa)
+      elif source == 'connected' or source == 'local':
+        nextHop = e['next_hop']['outgoing_interface']
+        oint = list(nextHop.keys())[0]
+        aa = {'nxthop1':np.nan,'updated1':np.nan,intrfc:oint}
+        tempDict.update(aa)
+      elif source == 'static':
+        nx = e['next_hop']['next_hop_list'][1]['next_hop']
+        aa = {'nxthop1':nx,'updated1':np.nan,intrfc:np.nan}
+        tempDict.update(aa)
+      tempdf = pd.DataFrame([tempDict])
+      df = pd.concat([df,tempdf])
+      #df.set_index("route",inplace=True)
+    return (df)
+  except Exception as e:
+    print (' --+-- ')
+    print (e)
+    pass
+    
+
+a = getRoute(keyDistro,df)
+print (a)
+a.to_csv(f'reports/routes-key-{nowTime}.csv')
+#a.to_csv(f'reports/keystoneRoute-baseline.csv')
