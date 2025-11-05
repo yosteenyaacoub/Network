@@ -7,9 +7,9 @@ nowTime = str(now.strftime("%B-%d_%H-%M"))
 
 os.system('clear')
 
-campusDistro = coreDistSwitches.devices['101F138B001R9606D']
-campuCore = coreDistSwitches.devices['F138W120RS9500C']
-keyDistro = coreDistSwitches.devices['K5302169R9500D']
+campusDistro = coreDistSwitches.devices['sw1']
+campuCore = coreDistSwitches.devices['sw2']
+keyDistro = coreDistSwitches.devices['sw3']
 
 df = pd.DataFrame()
 
