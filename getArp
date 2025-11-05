@@ -1,0 +1,43 @@
+import sys,os
+sys.path.append('/code')
+from functions import *
+import datetime as dt
+now = dt.datetime.now()
+nowTime = str(now.strftime("%B-%d_%H-%M"))
+
+os.system('clear')
+
+campusDistro = coreDistSwitches.devices['101F138B001R9606D']
+campuCore = coreDistSwitches.devices['F138W120RS9500C']
+keyDistro = coreDistSwitches.devices['K5302169R9500D']
+
+df = pd.DataFrame()
+
+def getArp(device,df):
+  try:
+    device.connect(init_exec_commands=[],init_config_commands=[],log_stdout=False)
+    command = device.parse('show ip arp')
+    interface = command['interfaces']
+    for k,v in interface.items():
+      neighbors = v['ipv4']['neighbors']
+      for entry in neighbors.values():
+        ip = entry['ip']
+        mac = entry['link_layer_address']
+        tempDict = {'ip':ip,'mac':mac,'interface':k}
+        tempdf = pd.DataFrame([tempDict])
+        df = pd.concat([df,tempdf])
+        print (' - - - ')
+    return (df)
+  except Exception as e:
+    print (e)
+    pass
+
+a = getArp(keyDistro,df)
+a.set_index("ip",inplace=True)
+print (a)
+a.to_csv(f'reports/arp-key-{nowTime}.csv')
+#a.to_csv(f'reports/keyArp-baseline.csv')
+
+ 
+
+
