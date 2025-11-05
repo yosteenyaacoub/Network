@@ -9,7 +9,7 @@ os.system('clear')
 
 campusDistro = coreDistSwitches.devices['sw1']
 campuCore = coreDistSwitches.devices['sw2']
-keyDistro = coreDistSwitches.devices['sw3']
+Distro = coreDistSwitches.devices['sw3']
 
 df = pd.DataFrame()
 
